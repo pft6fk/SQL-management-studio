@@ -1,0 +1,28 @@
+﻿<ul style="list-style-type: none">
+@foreach (var dir in Directorios)
+{
+    <li>
+        <div @onclick="@dir.toggle">
+            <span>@dir.getIcon()</span>
+            <span>@dir.ParentTreeview</span>
+
+        </div>
+
+        @if (dir.expanded)
+        {
+            <div>
+                <ul>
+                    @foreach (var archivo in dir.ChildTreeview)
+                    {
+                        <li style="list-style-type: none;">@archivo</li>
+                    }
+                </ul>
+                <Treeview Directorios="@dir.Treeview"></Treeview>
+            </div>
+        }
+    </li>
+}
+</ul>
+@code {
+    [Parameter] public TreeView[] Directorios { get; set; }
+}

@@ -1,0 +1,125 @@
+﻿@page "/index"
+@using System.Data
+<style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        .vertical_line {
+            border-left: 1px solid black;
+            height:908px;
+            margin-right: 3px;
+        }
+</style>
+ <!-- Header -->
+    <div style=" display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224);">
+        <div style="margin: 5px;">Select database:</div>
+        <select name="cars" class="col-1" style="padding:5px;" id="cars">
+            @foreach (var item in list)
+            {
+                <option value="@item">@item</option>
+            }
+          </select>
+
+        <button type="submit" class="btn-primary px-3" style="margin-left:32px">Execute</button>
+    </div>
+
+    <div class="" style="display: flex; flex-direction: row; ">
+        <!-- tree view -->
+        <div style="width: 300px;">
+            <Treeview Directorios="treeViewList.ToArray()"></Treeview>
+        </div>
+
+        <div class="vertical_line"></div>
+
+        <!-- sql query input -->
+        <div style="position: relative; height:100%">
+            <div style="border: 1px solid black; width: 200px; text-align: center; border-top-right-radius: 10px; border-top-left-radius: 10px; height: 32px; padding: 3px;">
+                SQLQuery1.sql
+            </div>
+            <div>
+                <textarea style="width: 1610px; height: 500px; padding: 6px;">SELECT * FROM [Superstore].[dbo].[Products]</textarea>
+            </div>
+            <table style="width: 1610px; ">
+                <th>
+                    First
+                </th>
+                <th>
+                    second
+                </th>
+                <th>
+                    third
+                </th>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+            </table>
+
+            <div style="display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224); position: relative; padding: 5px;">
+                <b>Query executed succesfully</b>
+                <div style="display: flex; flex-direction: row; margin-left: 1100px;">Elapsed: <div>00:00:20</div></div>
+                <div style="display: flex; flex-direction: row; margin-left: 48px;">25 <div style="margin-left: 6px;">rows</div></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div>
+
+    </div>
+
+@code {
+    public TreeView[] treeViews;
+
+    List<string> list = new List<string>();
+    List<TreeView> treeViewList = new List<TreeView>();
+    protected async override Task OnInitializedAsync()
+    {
+        var fall2014 = new TreeView("Fall 2014", new TreeView[] { }, new string[] { "image1.jpg", "image2.jpg", "image3.jpg" });
+        var summer2014 = new TreeView("Summer 2014", new TreeView[] { }, new string[] { "image10.jpg", "image20.jpg", "image30.jpg" });
+
+        var pictures = new TreeView("Pictures", new TreeView[] { fall2014, summer2014 }, new string[] { });
+
+        var music = new TreeView("Music", new TreeView[] { }, new string[] { "song1.mp3", "song2.mp3" });
+
+       
+        treeViews = new TreeView[] { pictures, music};
+        
+        using (SqlConnection con = new SqlConnection())
+        {
+            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;";
+            con.Open();
+
+            // Set up a command with the given query and associate
+            // this with the current connection.
+            using (SqlCommand cmd = new SqlCommand("SELECT name from sys.databases", con))
+            {
+                using (IDataReader dr = cmd.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        list.Add(dr[0].ToString());
+                    }
+                }
+
+            }
+        }
+         foreach (var item in list)
+        {
+            var obj = new TreeView(item, new TreeView[] { }, new string[] { "Table1", "Table2", "Table3" });
+            treeViewList.Add(obj);
+        }
+
+    }
+    
+
+}

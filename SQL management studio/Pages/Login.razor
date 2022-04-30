@@ -1,0 +1,54 @@
+﻿@page "/"
+@page "/login"
+@inject NavigationManager NavigationManager
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mb-5">
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-wrap p-4 p-md-5">
+                    <div class="icon d-flex align-items-center justify-content-center">
+                        <span class="fa fa-user-o"></span>
+                    </div>
+                        <h2 class="heading-section text-center">Login to server</h2>
+                            <br/>
+                        <form action="#" class="login-form">
+                            <div class="form-group">
+                                <input type="text" class="form-control rounded-left" placeholder="Server" @bind="serverCredentials.Server" required="">
+                            </div>
+                            <br/>
+                            <div class="form-group">
+                                <input type="text" class="form-control rounded-left" placeholder="Login" @bind="serverCredentials.Login" required="">
+                            </div>
+                            <br/>
+                            <div class="form-group d-flex">
+                                <input type="password" class="form-control rounded-left" placeholder="Password" @bind="serverCredentials.Password" required="">
+                            </div>
+                            <br/>
+                            <div class="form-group float-end">
+                                <a href="#" class="btn btn-secondary rounded submit p-3 px-5" >Cancel</a>
+                                <button type="submit" class="btn btn-primary rounded submit p-3 px-5" @onclick="IfCredentialExists">Connect</button>
+                            </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@code{
+    private ServerCredentials serverCredentials = new ServerCredentials()
+    {
+        Login="",
+        Password="",
+        Server="(localdb)\\MSSQLLocalDB"
+    };
+
+
+    private void IfCredentialExists()
+    {
+        NavigationManager.NavigateTo("/index");
+    }
+}
