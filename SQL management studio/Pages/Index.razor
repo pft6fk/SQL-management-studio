@@ -16,7 +16,7 @@
     <div style=" display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224);">
         <div style="margin: 5px;">Select database:</div>
         <select name="cars" class="col-1" style="padding:5px;" id="cars">
-            @foreach (var item in list)
+            @foreach (var item in listOfDB)
             {
                 <option value="@item">@item</option>
             }
@@ -80,46 +80,84 @@
 @code {
     public TreeView[] treeViews;
 
-    List<string> list = new List<string>();
+    List<string> listOfDB = new List<string>();
     List<TreeView> treeViewList = new List<TreeView>();
     protected async override Task OnInitializedAsync()
     {
-        var fall2014 = new TreeView("Fall 2014", new TreeView[] { }, new string[] { "image1.jpg", "image2.jpg", "image3.jpg" });
-        var summer2014 = new TreeView("Summer 2014", new TreeView[] { }, new string[] { "image10.jpg", "image20.jpg", "image30.jpg" });
 
-        var pictures = new TreeView("Pictures", new TreeView[] { fall2014, summer2014 }, new string[] { });
+        GetListOfDB();
 
-        var music = new TreeView("Music", new TreeView[] { }, new string[] { "song1.mp3", "song2.mp3" });
+        foreach (var databaseName in listOfDB)
+        {
+            var tree = new TreeView(databaseName, GetListOfTablesFromDB(databaseName).ToArray(), new string[]{});
+            treeViewList.Add(tree);
+        }
+    }
 
-       
-        treeViews = new TreeView[] { pictures, music};
-        
+
+
+    private List<string> GetListOfDB()
+    {
         using (SqlConnection con = new SqlConnection())
         {
             con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;";
             con.Open();
 
-            // Set up a command with the given query and associate
-            // this with the current connection.
             using (SqlCommand cmd = new SqlCommand("SELECT name from sys.databases", con))
             {
                 using (IDataReader dr = cmd.ExecuteReader())
                 {
                     while (dr.Read())
                     {
-                        list.Add(dr[0].ToString());
+                        listOfDB.Add(dr[0].ToString());
                     }
                 }
 
             }
         }
-         foreach (var item in list)
+        return listOfDB;
+    }
+
+    private List<TreeView> GetListOfTablesFromDB(string DbName)
+    {
+        using (var con = new SqlConnection())
         {
-            var obj = new TreeView(item, new TreeView[] { }, new string[] { "Table1", "Table2", "Table3" });
-            treeViewList.Add(obj);
+            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            con.Open();
+
+            List<TreeView> list = new List<TreeView>();
+            DataTable dt = con.GetSchema("Tables");
+
+            foreach (DataRow row in dt.Rows)
+            {
+                string tablename = (string)row[2];
+
+                list.Add(new TreeView(tablename, new TreeView[] { },  GetListOfColumnsFromDB(DbName, tablename).ToArray()));
+            }
+
+            return list;
         }
 
     }
-    
 
+    private List<string> GetListOfColumnsFromDB(string DbName, string tableName)
+    {
+        using (var con = new SqlConnection())
+        {
+            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            con.Open();
+
+            var list = new List<string>();
+
+            string[] restrictionsColumns = new string[3];
+            restrictionsColumns[2] = tableName;
+            DataTable schemaColumns = con.GetSchema("Columns", restrictionsColumns);
+            foreach (System.Data.DataRow rowColumn in schemaColumns.Rows)
+            {
+                list.Add(rowColumn[3].ToString());
+            }
+            return list;
+        }
+
+    }
 }
