@@ -108,7 +108,7 @@
 
         using (var connection = new SqlConnection())
         {
-            connection.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            connection.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;Database=" + DbName + ";";
             connection.Open();
             connection.StatisticsEnabled = true;
 
@@ -148,7 +148,7 @@
     {
         using (SqlConnection con = new SqlConnection())
         {
-            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;";
+            con.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;";
             con.Open();
 
             using (SqlCommand cmd = new SqlCommand("SELECT name from sys.databases", con))
@@ -170,7 +170,7 @@
     {
         using (var con = new SqlConnection())
         {
-            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            con.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;Database=" + DbName + ";";
             con.Open();
 
             List<TreeView> list = new List<TreeView>();
@@ -191,7 +191,7 @@
     {
         using (var con = new SqlConnection())
         {
-            con.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            con.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;Database=" + DbName + ";";
             con.Open();
 
             var list = new List<string>();
