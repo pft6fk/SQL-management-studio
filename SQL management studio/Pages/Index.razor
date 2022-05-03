@@ -1,4 +1,4 @@
-﻿@page "/index"
+﻿@page "/index/{Server}/{Username}/{Password}"
 @using System.Data
 
 <style>
@@ -16,7 +16,7 @@
         <!-- Header -->
     <div style=" display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224);">
         <div style="margin: 5px;">Select database:</div>
-        <select name="cars" class="col-1" style="padding:5px;" id="cars">
+        <select  class="col-1" style="padding:5px;" @bind="DbName">
             @foreach (var item in listOfDB)
             {
                 <option value="@item">@item</option>
@@ -28,7 +28,7 @@
 
     <div class="" style="display: flex; flex-direction: row; ">
         <!-- tree view -->
-        <div style="width: 300px;">
+        <div style="min-width: 300px;">
             <Treeview Directorios="treeViewList.ToArray()"></Treeview>
         </div>
 
@@ -42,11 +42,13 @@
             <div>
                 <textarea style="width: 1610px; height: 500px; padding: 6px;" @bind="@Query">SELECT * FROM [Superstore].[dbo].[Products]</textarea>
             </div>
-            <table style="width: 1610px; ">
+            <table style="width: 1610px;">
+                <thead>
                 @foreach (var columnName in columns)
                 {
-                    <th style="width:300px">@columnName</th>   
+                    <th style="width:300px; background-color:lightgray">@columnName</th>   
                 }
+                </thead>
                 @foreach (var row in data)
                 {       
                     <tr>
@@ -60,8 +62,8 @@
 
             <div style="display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224); position: relative; padding: 5px;">
                 <b>Query executed succesfully</b>
-                <div style="display: flex; flex-direction: row; margin-left: 1100px;">Elapsed: <div>00:00:20</div></div>
-                <div style="display: flex; flex-direction: row; margin-left: 48px;">25 <div style="margin-left: 6px;">rows</div></div>
+                <div style="display: flex; flex-direction: row; margin-left: 1100px;">Elapsed: <div>@TimeElapsed milliseconds</div></div>
+                <div style="display: flex; flex-direction: row; margin-left: 48px;">@RowsAffected <div style="margin-left: 6px;">rows</div></div>
                 
             </div>
         </div>
@@ -77,14 +79,19 @@
     List<string> columns = new List<string>(); //this list gets lists of columns in proper sequence
     List<List<string>> data = new List<List<string>>();
     List<TreeView> treeViewList = new List<TreeView>();
+    public long TimeElapsed { get; set; }
+    public int RowsAffected { get; set; }
+    public string DbName { get; set; }
+    [Parameter]public string Username { get; set; } = "";
+    [Parameter]public string Password { get; set; } ="";
+    [Parameter]public string Server { get; set; }
+
 
     public string Query { get; set; }     
 
     protected async override Task OnInitializedAsync()
     {
-
         GetListOfDB();
-        ExecuteQuery("select * from Repos", "GitHub_rebuild");
 
         foreach (var databaseName in listOfDB)
         {
@@ -92,12 +99,7 @@
             treeViewList.Add(tree);
         }
 
-    }
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-
-    }
+    }   
 
     private void ExecuteQuery(string query, string DbName)
     {
@@ -108,11 +110,15 @@
         {
             connection.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
             connection.Open();
+            connection.StatisticsEnabled = true;
+
+            var stats = connection.RetrieveStatistics(); 
 
             using(SqlCommand command = new SqlCommand())
             {
                 command.CommandText = query;
                 command.Connection = connection;
+
                 var obj = command.ExecuteReader();
 
                 for(int i=0;i<obj.FieldCount;i++)
@@ -131,6 +137,9 @@
                     data.Add(temp);
                 }
             }
+            
+            stats = connection.RetrieveStatistics(); 
+            TimeElapsed = (long) stats["ExecutionTime"];
         }
     }
 
@@ -176,7 +185,6 @@
 
             return list;
         }
-
     }
 
     private List<string> GetListOfColumnsFromDB(string DbName, string tableName)
@@ -197,7 +205,6 @@
             }
             return list;
         }
-
     }
 
     private string GetTableName(string query)
@@ -222,6 +229,6 @@
         data.Clear();
         columns.Clear();
 
-        ExecuteQuery(Query, "GitHub_Rebuild");
+        ExecuteQuery(Query, DbName);
     }
 }

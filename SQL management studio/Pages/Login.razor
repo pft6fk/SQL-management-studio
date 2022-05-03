@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/login"
+@using System.Web
 @inject NavigationManager NavigationManager
 
     <div class="container">
@@ -17,20 +18,20 @@
                             <br/>
                         <form action="#" class="login-form">
                             <div class="form-group">
-                                <input type="text" class="form-control rounded-left" placeholder="Server" @bind="serverCredentials.Server" required="">
+                                <input type="text" class="form-control rounded-left" placeholder="Server" @bind="Server" required="">
                             </div>
                             <br/>
                             <div class="form-group">
-                                <input type="text" class="form-control rounded-left" placeholder="Login" @bind="serverCredentials.Login" required="">
+                                <input type="text" class="form-control rounded-left" placeholder="Login" @bind="Username" required="">
                             </div>
                             <br/>
                             <div class="form-group d-flex">
-                                <input type="password" class="form-control rounded-left" placeholder="Password" @bind="serverCredentials.Password" required="">
+                                <input type="password" class="form-control rounded-left" placeholder="Password" @bind="Password" required="">
                             </div>
                             <br/>
                             <div class="form-group float-end">
                                 <a href="#" class="btn btn-secondary rounded submit p-3 px-5" >Cancel</a>
-                                <button type="submit" class="btn btn-primary rounded submit p-3 px-5" @onclick="IfCredentialExists">Connect</button>
+                                <button type="submit" class="btn btn-primary rounded submit p-3 px-5" @onclick="TryLogin">Connect</button>
                             </div>
                         </form>
                 </div>
@@ -39,16 +40,32 @@
     </div>
 
 @code{
-    private ServerCredentials serverCredentials = new ServerCredentials()
-    {
-        Login="",
-        Password="",
-        Server="(localdb)\\MSSQLLocalDB"
-    };
+    private bool isPropper = false;
+
+    public string Username { get; set; } = "";
+    public string Password { get; set; } ="";
+    public string Server { get; set; } = "(localdb)\\MSSQLLocalDB";
 
 
-    private void IfCredentialExists()
+    private void TryLogin()
     {
-        NavigationManager.NavigateTo("/index");
+        try
+        {
+            using(var con = new SqlConnection())
+            {
+                con.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;";
+                con.Open();
+                isPropper = true;
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        if (isPropper)
+        {
+            NavigationManager.NavigateTo($"/index/{HttpUtility.UrlEncode(Server)}/{Username}/{Password}");
+        }
+
     }
 }
