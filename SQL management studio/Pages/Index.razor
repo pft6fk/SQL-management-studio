@@ -1,5 +1,6 @@
 ﻿@page "/index"
 @using System.Data
+
 <style>
         table, th, td {
             border: 1px solid black;
@@ -12,7 +13,7 @@
             margin-right: 3px;
         }
 </style>
- <!-- Header -->
+        <!-- Header -->
     <div style=" display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224);">
         <div style="margin: 5px;">Select database:</div>
         <select name="cars" class="col-1" style="padding:5px;" id="cars">
@@ -22,7 +23,7 @@
             }
           </select>
 
-        <button type="submit" class="btn-primary px-3" style="margin-left:32px">Execute</button>
+        <button type="submit" class="btn-primary px-3" style="margin-left:32px" @onclick="@Execute">Execute</button>
     </div>
 
     <div class="" style="display: flex; flex-direction: row; ">
@@ -39,30 +40,23 @@
                 SQLQuery1.sql
             </div>
             <div>
-                <textarea style="width: 1610px; height: 500px; padding: 6px;">SELECT * FROM [Superstore].[dbo].[Products]</textarea>
+                <textarea style="width: 1610px; height: 500px; padding: 6px;" @bind="@Query">SELECT * FROM [Superstore].[dbo].[Products]</textarea>
             </div>
             <table style="width: 1610px; ">
-                <th>
-                    First
-                </th>
-                <th>
-                    second
-                </th>
-                <th>
-                    third
-                </th>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-                <tr><td>1</td><td>2</td><td>3</td></tr>
-            </table>
+                @foreach (var columnName in columns)
+                {
+                    <th style="width:300px">@columnName</th>   
+                }
+                @foreach (var row in data)
+                {       
+                    <tr>
+                        @foreach (var cell in row)
+                        {
+                            <td style="width:300px">@cell</td>
+                        }
+                    </tr>
+                }
+        </table>
 
             <div style="display: flex; flex-direction: row; padding: 16px; background-color: rgb(224, 224, 224); position: relative; padding: 5px;">
                 <b>Query executed succesfully</b>
@@ -78,22 +72,67 @@
     </div>
 
 @code {
-    public TreeView[] treeViews;
-
     List<string> listOfDB = new List<string>();
+    List<string> listOfColumns  = new List<string>(); //this list gets lists of columns in wrong sequence
+    List<string> columns = new List<string>(); //this list gets lists of columns in proper sequence
+    List<List<string>> data = new List<List<string>>();
     List<TreeView> treeViewList = new List<TreeView>();
+
+    public string Query { get; set; }     
+
     protected async override Task OnInitializedAsync()
     {
 
         GetListOfDB();
+        ExecuteQuery("select * from Repos", "GitHub_rebuild");
 
         foreach (var databaseName in listOfDB)
         {
             var tree = new TreeView(databaseName, GetListOfTablesFromDB(databaseName).ToArray(), new string[]{});
             treeViewList.Add(tree);
         }
+
+    }
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
     }
 
+    private void ExecuteQuery(string query, string DbName)
+    {
+        string tableName = GetTableName(query);
+        listOfColumns = GetListOfColumnsFromDB(DbName, tableName);
+
+        using (var connection = new SqlConnection())
+        {
+            connection.ConnectionString = "Server=(localdb)\\MSSQLLocalDB;User Id=user;Password=password;Trusted_Connection=true;Database=" + DbName + ";";
+            connection.Open();
+
+            using(SqlCommand command = new SqlCommand())
+            {
+                command.CommandText = query;
+                command.Connection = connection;
+                var obj = command.ExecuteReader();
+
+                for(int i=0;i<obj.FieldCount;i++)
+                {
+                    columns.Add(obj.GetName(i));
+                }
+
+                while (obj.Read())
+                {
+
+                    var temp = new List<string>();
+                    for(int i = 0; i < obj.GetValues(new Object[100]); i++)
+                    {
+                        temp.Add(obj.GetValue(i).ToString());
+                    }
+                    data.Add(temp);
+                }
+            }
+        }
+    }
 
 
     private List<string> GetListOfDB()
@@ -159,5 +198,30 @@
             return list;
         }
 
+    }
+
+    private string GetTableName(string query)
+    {
+        var arr = query.Split(" ",  StringSplitOptions.RemoveEmptyEntries);
+        string tableName = String.Empty;
+
+        for (int i = 0; i < arr.Length; i++)
+        {   
+            if(arr[i].ToUpper() == "FROM")
+            {
+                tableName = arr[i+1];
+                break;
+            }
+        }
+
+        return tableName;
+    }
+
+    private void Execute()
+    {
+        data.Clear();
+        columns.Clear();
+
+        ExecuteQuery(Query, "GitHub_Rebuild");
     }
 }
