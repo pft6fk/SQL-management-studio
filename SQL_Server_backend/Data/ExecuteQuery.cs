@@ -2,8 +2,8 @@
 {
     public class ExecuteQuery
     {
-        public List<string> columns = new List<string>();
-        public List<List<string>> data = new List<List<string>>();
+        public List<string> Columns  { get; set; }
+        public List<List<string>> Data { get; set; }
         public long TimeElapsed { get; set; }
         public int RowsAffected { get; set; }
     }

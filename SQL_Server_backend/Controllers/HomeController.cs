@@ -127,7 +127,7 @@ namespace SQL_Server_backend.Controllers
         {
             string DbName = "Rebuild_Github";
             ExecuteQuery executeQuery = new ExecuteQuery();
-            List<List<string>> data = new List<List<string>>();
+            
 
             using (var connection = new SqlConnection())
             {
@@ -137,16 +137,17 @@ namespace SQL_Server_backend.Controllers
 
                 var stats = connection.RetrieveStatistics();
 
+                var tempData = new List<List<string>>();
+                var tempColumns = new List<string>();
                 using (SqlCommand command = new SqlCommand())
                 {
                     command.CommandText = "Select * from Repos";
                     command.Connection = connection;
-
                     var obj = command.ExecuteReader();
 
                     for (int i = 0; i < obj.FieldCount; i++)
                     {
-                        executeQuery.columns.Add(obj.GetName(i));
+                        tempColumns.Add(obj.GetName(i));
                     }
 
                     while (obj.Read())
@@ -156,12 +157,14 @@ namespace SQL_Server_backend.Controllers
                         {
                             temp.Add(obj.GetValue(i).ToString());
                         }
-                        //executeQuery.data.Add(temp);
+                        tempData.Add(temp);
                     }
                 }
 
                 stats = connection.RetrieveStatistics();
                 executeQuery.TimeElapsed = (long)stats["ExecutionTime"];
+                executeQuery.Data = tempData;
+                executeQuery.Columns = tempColumns;
             }
 
             return Ok(executeQuery);
