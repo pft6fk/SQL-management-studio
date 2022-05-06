@@ -12,11 +12,11 @@
             this.Treeview = treeView;
             this.ChildTreeview = ChildTreeview;
         }
-        public void toggle()
+        public void Toggle()
         {
             expanded = !expanded;
         }
-        public string getIcon()
+        public string GetIcon()
         {
             if (expanded)
             {

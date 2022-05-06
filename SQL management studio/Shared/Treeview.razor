@@ -2,8 +2,8 @@
 @foreach (var dir in Directorios)
 {
     <li>
-        <div @onclick="@dir.toggle">
-            <span>@dir.getIcon()</span>
+        <div @onclick="@dir.Toggle">
+            <span>@dir.GetIcon()</span>
             <span>@dir.ParentTreeview</span>
 
         </div>

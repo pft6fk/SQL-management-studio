@@ -103,9 +103,6 @@
 
     private void ExecuteQuery(string query, string DbName)
     {
-        string tableName = GetTableName(query);
-        listOfColumns = GetListOfColumnsFromDB(DbName, tableName);
-
         using (var connection = new SqlConnection())
         {
             connection.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;Database=" + DbName + ";";
@@ -146,6 +143,8 @@
 
     private List<string> GetListOfDB()
     {
+        // TODO: request to api to get list of dbs
+
         using (SqlConnection con = new SqlConnection())
         {
             con.ConnectionString = "Server=" + Server + ";User Id=" + Username + ";Password=" + Password + ";Trusted_Connection=true;";
@@ -207,7 +206,7 @@
         }
     }
 
-    private string GetTableName(string query)
+    private string GetTableNameFromQuery(string query)
     {
         var arr = query.Split(" ",  StringSplitOptions.RemoveEmptyEntries);
         string tableName = String.Empty;
